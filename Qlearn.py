@@ -163,7 +163,9 @@ fig = plt.figure(figsize=(15,15))
 ax = fig.add_subplot(111, projection='3d')
 
 ax.plot(x, y, z, label='Agent Trace')
-
+ax.set_xlabel("X")
+ax.set_ylabel("Y")
+ax.set_zlabel("Z")
 # create modifier visualisations
 ceilingx = np.arange(restricted_airspace1[0],restricted_airspace1[1],1)
 ceilingy = np.arange(restricted_airspace1[2],restricted_airspace1[3],1)
