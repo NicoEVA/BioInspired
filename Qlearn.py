@@ -1,16 +1,14 @@
 from math import ceil
 from numpy.lib.function_base import _gradient_dispatcher
-from Thermalmap import Gridsize
 import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
-from Thermalmap import Thermalgrid
 import time
 
 #The agent can go in 4 directions
 #up right down left
-rows =12
-cols = 12
+rows =14
+cols = 14
 stacks = 8 #attempt 3D
 q_vals = np.zeros((rows,cols,stacks,6))
 choices = np.zeros((rows,cols,stacks))
@@ -156,7 +154,7 @@ print("trained successfully")
 
 
 
-data = extrsp(3,3,2)
+data = extrsp(1,1,3)
 
 
 x = [xi[0] for xi in data]
@@ -164,59 +162,77 @@ y = [yi[1] for yi in data]
 z = [zi[2] for zi in data]
 
 
-fig = plt.figure()
+fig = plt.figure(figsize=(15,15))
 ax = fig.add_subplot(111, projection='3d')
 
 ax.plot(x, y, z, label='parametric curve')
 
 ceilingx = np.arange(restricted_airspace1[0],restricted_airspace1[1],1)
 ceilingy = np.arange(restricted_airspace1[2],restricted_airspace1[3],1)
+
+wally1 = np.zeros_like(ceilingx)
+wally1.fill(restricted_airspace1[2])
+wally2 = np.zeros_like(ceilingx)
+wally2.fill(restricted_airspace1[3]-1)
+w1x, w1y = np.meshgrid(ceilingx,wally1)
+w2x, w2y = np.meshgrid(ceilingx,wally2)
+
+
+Zwallsx = np.zeros((np.shape(ceilingx)[0],np.shape(wally1)[0]))
+for len in range(np.shape(Zwallsx)[1]):
+    Zwallsx[len][:] = alt_rest1 + len
+
 X,Y = np.meshgrid(ceilingx,ceilingy)
-Z = np.ones((len(ceilingx),len(ceilingy)))
+Z = np.ones((np.shape(ceilingx)[0],np.shape(ceilingy)[0]))
 Z.fill(alt_rest1)
-thermalsx = np.arange(thermals1[0],thermals1[1],1)
-thermalsy = np.arange(thermals1[2],thermals1[3],1)
+
+thermalsx = np.arange(thermals1[0],thermals1[1]+1,1)
+thermalsy = np.arange(thermals1[2],thermals1[3]+1,1)
+
 Xt, Yt = np.meshgrid(thermalsx,thermalsy)
-Zt = np.ones((len(thermalsy),len(thermalsx)))
+Zt = np.zeros((np.shape(thermalsy)[0],np.shape(thermalsx)[0]))
 ax.plot_surface(Xt,Yt,Zt,color="Green",alpha=0.4)
 ax.plot_surface(X,Y,Z,color="Red",alpha=0.4)
+ax.plot_surface(w1x,w1y,Zwallsx,color="Red",alpha=0.4)
+ax.plot_surface(w2x,w2y,Zwallsx,color="Red",alpha=0.4)
+
 ax.legend()
 
 plt.show()
 
-cs = generatechoices(q_vals,choices)
-#Create Trend 
-xp,yp,zp = np.meshgrid(range(rows),range(cols),range(stacks))
+# cs = generatechoices(q_vals,choices)
+# #Create Trend 
+# xp,yp,zp = np.meshgrid(range(rows),range(cols),range(stacks))
 
-u = np.zeros((rows,cols,stacks))
-v = np.zeros((rows,cols,stacks))
-w = np.zeros((rows,cols,stacks))
+# u = np.zeros((rows,cols,stacks))
+# v = np.zeros((rows,cols,stacks))
+# w = np.zeros((rows,cols,stacks))
 
-for i in range(rows-1):
-    for j in range(cols-1):
-        for k in range(stacks-1):
-            if cs[i,j,k] ==  0:
-                u[i,j,k] = 1
-            elif cs[i,j,k] ==  1:
-                v[i,j,k] = 1
-            elif cs[i,j,k] == 2:
-                u[i,j,k] =-1
-            elif cs[i,j,k] == 3:
-                v[i,j,k] = -1
-            elif cs[i,j,k] == 4:
-                w[i,j,k] = -1
-            elif cs[i,j,k] == 5:
-                w[i,j,k] = 1
-            # elif rewards[i,j,k]==-100:
-            #     xp[i,j,k]=0
-            #     yp[i,j,k]=0
-            #     zp[i,j,k]=0
-fig = plt.figure(figsize=(30, 30))
-ax = fig.gca(projection='3d')
+# for i in range(rows-1):
+#     for j in range(cols-1):
+#         for k in range(stacks-1):
+#             if cs[i,j,k] ==  0:
+#                 u[i,j,k] = 1
+#             elif cs[i,j,k] ==  1:
+#                 v[i,j,k] = 1
+#             elif cs[i,j,k] == 2:
+#                 u[i,j,k] =-1
+#             elif cs[i,j,k] == 3:
+#                 v[i,j,k] = -1
+#             elif cs[i,j,k] == 4:
+#                 w[i,j,k] = -1
+#             elif cs[i,j,k] == 5:
+#                 w[i,j,k] = 1
+#             # elif rewards[i,j,k]==-100:
+#             #     xp[i,j,k]=0
+#             #     yp[i,j,k]=0
+#             #     zp[i,j,k]=0
+# fig = plt.figure(figsize=(30, 30))
+# ax = fig.gca(projection='3d')
 
          
-ax.quiver(xp, yp, zp, u, v, w, length=0.5, normalize=True)
+# ax.quiver(xp, yp, zp, u, v, w, length=0.5, normalize=True)
 
-plt.show()
+# plt.show()
 
 
