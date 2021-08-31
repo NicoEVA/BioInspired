@@ -7,18 +7,22 @@ import time
 
 #The agent can go in 6 directions
 #up right down left 3ddown 3dup
+
+## Define Extent of Environment and create actions/q-values
 rows =24
 cols = 24
 stacks = 10 #attempt 3D
 q_vals = np.zeros((rows,cols,stacks,6))
 choices = np.zeros((rows,cols,stacks))
 
+# Define Modifier areas
 alt_rest1 = 5
 restricted_airspace1 = [5,15,0,22]
 thermals1  = [12,20,15,20]
 thermals2  = [7,13,7,18]
 
 
+## Set up environment boundaries and varying negative rewards
 actions = ['up','right','down','left',"3ddown","3dup"]
 rewards = np.full((rows,cols,stacks),-1)
 for z in range(stacks-1):
@@ -49,6 +53,7 @@ for z in range(alt_rest1,stacks):
 rewards[2,2,3]=100            
 
 
+## Create required functions
 def terminal(row,col,stack):
     if rewards[row,col,stack]==-100:
         return True
@@ -119,6 +124,8 @@ def generatechoices(q_vals,choices):
 
 
 
+
+## Set up and perform training Run
 epsilon = 0.35
 discount = 0.8
 lrate    = 0.8
@@ -144,21 +151,20 @@ for episode in range(20000):
     ep += 1
 print("trained successfully")
 
-
-
+## Set desired Origin and create Graphs based on found Path
 data = extrsp(20,20,7)
 
-
+# create agent trace
 x = [xi[0] for xi in data]
 y = [yi[1] for yi in data]
 z = [zi[2] for zi in data]
-
 
 fig = plt.figure(figsize=(15,15))
 ax = fig.add_subplot(111, projection='3d')
 
 ax.plot(x, y, z, label='Agent Trace')
 
+# create modifier visualisations
 ceilingx = np.arange(restricted_airspace1[0],restricted_airspace1[1],1)
 ceilingy = np.arange(restricted_airspace1[2],restricted_airspace1[3],1)
 
@@ -188,7 +194,7 @@ thermalsy2 = np.arange(thermals2[2],thermals2[3]+1,1)
 Xt2, Yt2 = np.meshgrid(thermalsx2,thermalsy2)
 Zt2 = np.zeros((np.shape(thermalsy2)[0],np.shape(thermalsx2)[0]))
 
-
+# add modifier locations to plot
 ax.plot_surface(Xt,Yt,Zt,color="Green",alpha=0.4)
 ax.plot_surface(Xt2,Yt2,Zt2,color="Green",alpha=0.4)
 ax.plot_surface(X,Y,Z,color="Red",alpha=0.4)
@@ -197,9 +203,11 @@ ax.plot_surface(w2x,w2y,Zwallsx,color="Red",alpha=0.4)
 
 ax.legend()
 
+# show compount figure
 plt.show()
 
-##UNCOMMENT the following to show a vector field representation of the learned actions
+
+##UNCOMMENT the following to show a vectorfield representation of the learned optimal actions
 
 # cs = generatechoices(q_vals,choices)
 # #Create Trend 
