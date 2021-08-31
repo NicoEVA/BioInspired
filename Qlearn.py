@@ -5,18 +5,18 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 import time
 
-#The agent can go in 4 directions
-#up right down left
-rows =14
-cols = 14
-stacks = 8 #attempt 3D
+#The agent can go in 6 directions
+#up right down left 3ddown 3dup
+rows =24
+cols = 24
+stacks = 10 #attempt 3D
 q_vals = np.zeros((rows,cols,stacks,6))
 choices = np.zeros((rows,cols,stacks))
 
-alt_rest1 = 4
-restricted_airspace1 = [0,int(rows/2),0,int(cols/2),alt_rest1]
-thermals1  = [6,10,0,6]
-
+alt_rest1 = 5
+restricted_airspace1 = [5,15,0,22]
+thermals1  = [12,20,15,20]
+thermals2  = [7,13,7,18]
 
 
 actions = ['up','right','down','left',"3ddown","3dup"]
@@ -31,6 +31,9 @@ for z in range(stacks-1):
     for x in range(thermals1[0],thermals1[1]):
         for y in range(thermals1[2],thermals1[3]):
             rewards[x,y,z] = -0.2
+    for x in range(thermals2[0],thermals2[1]):
+        for y in range(thermals2[2],thermals2[3]):
+            rewards[x,y,z] = -0.2
 for x in range(cols-1):
     for y in range(rows-1):
         for z in [0,stacks-1]:
@@ -42,19 +45,8 @@ for z in range(alt_rest1,stacks):
         for y in range(restricted_airspace1[2],restricted_airspace1[3]):
             rewards[x,y,z] = -100
 
-rewards[10,10,6]=100            
-
-
-
-
-
-
-
-
-
-
-
-
+#Defining where the goal/target point is
+rewards[2,2,3]=100            
 
 
 def terminal(row,col,stack):
@@ -127,11 +119,11 @@ def generatechoices(q_vals,choices):
 
 
 
-epsilon = 0.65
+epsilon = 0.35
 discount = 0.8
-lrate    = 0.85
+lrate    = 0.8
 ep = 0
-for episode in range(15000):
+for episode in range(20000):
     row,col,stack = startloc()
     tries = 0 
     while not terminal(row,col,stack):
@@ -154,7 +146,7 @@ print("trained successfully")
 
 
 
-data = extrsp(1,1,3)
+data = extrsp(20,20,7)
 
 
 x = [xi[0] for xi in data]
@@ -165,7 +157,7 @@ z = [zi[2] for zi in data]
 fig = plt.figure(figsize=(15,15))
 ax = fig.add_subplot(111, projection='3d')
 
-ax.plot(x, y, z, label='parametric curve')
+ax.plot(x, y, z, label='Agent Trace')
 
 ceilingx = np.arange(restricted_airspace1[0],restricted_airspace1[1],1)
 ceilingy = np.arange(restricted_airspace1[2],restricted_airspace1[3],1)
@@ -183,15 +175,22 @@ for len in range(np.shape(Zwallsx)[1]):
     Zwallsx[len][:] = alt_rest1 + len
 
 X,Y = np.meshgrid(ceilingx,ceilingy)
-Z = np.ones((np.shape(ceilingx)[0],np.shape(ceilingy)[0]))
+Z = np.ones((np.shape(ceilingy)[0],np.shape(ceilingx)[0]))
 Z.fill(alt_rest1)
 
 thermalsx = np.arange(thermals1[0],thermals1[1]+1,1)
 thermalsy = np.arange(thermals1[2],thermals1[3]+1,1)
-
 Xt, Yt = np.meshgrid(thermalsx,thermalsy)
 Zt = np.zeros((np.shape(thermalsy)[0],np.shape(thermalsx)[0]))
+
+thermalsx2 = np.arange(thermals2[0],thermals2[1]+1,1)
+thermalsy2 = np.arange(thermals2[2],thermals2[3]+1,1)
+Xt2, Yt2 = np.meshgrid(thermalsx2,thermalsy2)
+Zt2 = np.zeros((np.shape(thermalsy2)[0],np.shape(thermalsx2)[0]))
+
+
 ax.plot_surface(Xt,Yt,Zt,color="Green",alpha=0.4)
+ax.plot_surface(Xt2,Yt2,Zt2,color="Green",alpha=0.4)
 ax.plot_surface(X,Y,Z,color="Red",alpha=0.4)
 ax.plot_surface(w1x,w1y,Zwallsx,color="Red",alpha=0.4)
 ax.plot_surface(w2x,w2y,Zwallsx,color="Red",alpha=0.4)
@@ -199,6 +198,8 @@ ax.plot_surface(w2x,w2y,Zwallsx,color="Red",alpha=0.4)
 ax.legend()
 
 plt.show()
+
+##UNCOMMENT the following to show a vector field representation of the learned actions
 
 # cs = generatechoices(q_vals,choices)
 # #Create Trend 
